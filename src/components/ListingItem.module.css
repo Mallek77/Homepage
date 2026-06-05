@@ -1,0 +1,144 @@
+.listingItem {
+  height: var(--height-408);
+  flex: 1;
+  border-radius: var(--br-10);
+  background-color: var(--color-white);
+  border: var(--border-1);
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  isolation: isolate;
+  min-width: var(--min-w-288);
+  cursor: pointer;
+  text-align: left;
+  font-size: var(--fs-12);
+  color: var(--color-mediumaquamarine);
+  font-family: var(--font-archivo);
+}
+.listing01ImageIcon {
+  align-self: stretch;
+  height: var(--height-300);
+  max-width: 100%;
+  overflow: hidden;
+  flex-shrink: 0;
+  object-fit: cover;
+  z-index: 0;
+}
+.superhostTag {
+  margin: 0 !important;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  border-radius: var(--br-13);
+  background-color: var(--color-white);
+  display: flex;
+  align-items: center;
+  padding: var(--padding-6);
+  gap: var(--gap-2);
+  z-index: 1;
+}
+.superhostIcon {
+  height: var(--height-10);
+  width: var(--width-6_7);
+  position: relative;
+}
+.superhost {
+  position: relative;
+  font-weight: 500;
+}
+.heartIcon {
+  cursor: pointer;
+  border: 0;
+  padding: var(--padding-01);
+  background-color: transparent;
+  width: var(--width-30);
+  height: var(--height-30);
+  position: absolute;
+  margin: 0 !important;
+  top: 10px;
+  right: 10px;
+  object-fit: cover;
+  z-index: 2;
+}
+.itemDetails {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--padding-16);
+  gap: var(--gap-14);
+  z-index: 3;
+  font-size: var(--fs-16);
+  color: var(--color-gray-200);
+}
+.listingCont,
+.listingInfo {
+  display: flex;
+  gap: var(--gap-4);
+}
+.listingInfo {
+  align-self: stretch;
+  align-items: center;
+}
+.listingCont {
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.listingSubtitle,
+.listingTitle {
+  align-self: stretch;
+  position: relative;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.listingTitle {
+  line-height: var(--lh-16);
+  font-weight: 600;
+}
+.listingSubtitle {
+  font-size: var(--fs-14);
+  line-height: var(--lh-14);
+  color: var(--color-gray-100);
+}
+.ratingCont {
+  width: var(--width-42);
+  display: flex;
+  align-items: center;
+  gap: var(--gap-5);
+  font-size: var(--fs-14);
+}
+.rating {
+  position: relative;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+}
+.starIcon {
+  height: var(--height-13);
+  width: var(--width-13);
+  position: relative;
+}
+.bottomContainer {
+  align-self: stretch;
+  height: var(--height-28);
+  display: flex;
+  align-items: center;
+  font-size: var(--fs-19);
+}
+.pricePerNight {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--gap-2);
+}
+.night {
+  position: relative;
+  font-size: var(--fs-14);
+  letter-spacing: 0.02em;
+  color: var(--color-gray-100);
+}

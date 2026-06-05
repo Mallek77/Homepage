@@ -1,0 +1,95 @@
+.page { display: flex; flex-direction: column; gap: 20px; padding: 24px; min-height: 100vh; }
+
+.header { display: flex; align-items: center; gap: 14px; }
+.pageTitle { font-size: 22px; font-weight: 700; color: #1a2332; margin: 0; }
+.period {
+  font-size: 13px; color: #4a5a6e; font-weight: 600;
+  background: #fff; border: 1px solid #edf0f5;
+  padding: 4px 12px; border-radius: 20px;
+}
+
+/* KPI */
+.kpiRow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+
+.kpiCard {
+  background: #fff; border-radius: 10px; padding: 16px;
+  display: flex; align-items: center; gap: 12px;
+  border: 1px solid #edf0f5; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.kpiInfo { display: flex; flex-direction: column; gap: 2px; }
+.kpiVal { font-size: 18px; font-weight: 700; color: #1a2332; line-height: 1.1; }
+.kpiLab { font-size: 11px; color: #4a5a6e; font-weight: 600; }
+
+/* Panels */
+.panels { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.panelFull { grid-column: 1 / -1; }
+
+.panel {
+  background: #fff; border-radius: 12px; padding: 20px;
+  border: 1px solid #edf0f5; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+.panelTitle { font-size: 14px; font-weight: 700; color: #1a2332; margin: 0; }
+
+/* Bar chart */
+.barChart { display: flex; flex-direction: column; gap: 14px; }
+
+.barItem { display: flex; align-items: center; gap: 10px; }
+.barLabel { font-size: 12px; font-weight: 600; color: #1a2332; width: 90px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.barTrack { flex: 1; height: 8px; background: #edf0f5; border-radius: 99px; overflow: hidden; }
+.barFill { height: 100%; border-radius: 99px; transition: width 0.4s; }
+.barVal { font-size: 12px; font-weight: 700; color: #1a2332; width: 80px; text-align: right; flex-shrink: 0; }
+
+.machineMissions { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #edf0f5; padding-top: 14px; }
+.machineMissionRow { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.machineDot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.machineMac { flex: 1; color: #1a2332; font-weight: 600; }
+.machineCount { color: #4a5a6e; font-weight: 600; }
+
+/* Statut */
+.statutList { display: flex; flex-direction: column; gap: 14px; }
+.statutItem { display: flex; flex-direction: column; gap: 6px; }
+.statutRow { display: flex; align-items: center; justify-content: space-between; }
+.statutLabel { font-size: 13px; font-weight: 600; color: #1a2332; }
+.statutCount { font-size: 12px; color: #4a5a6e; font-weight: 500; }
+
+/* Paiement */
+.paiementSection { border-top: 1px solid #edf0f5; padding-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+.paiementTitle { font-size: 13px; font-weight: 700; color: #1a2332; margin: 0; }
+.paiementRow { height: 10px; background: #edf0f5; border-radius: 99px; overflow: hidden; }
+.paiementLegend { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; gap: 8px; }
+
+/* Table */
+.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table thead tr { border-bottom: 2px solid #edf0f5; }
+.table th { text-align: left; padding: 8px 10px; font-size: 10px; font-weight: 700; color: #4a5a6e; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+.table td { padding: 10px 10px; border-bottom: 1px solid #edf0f5; color: #1a2332; vertical-align: middle; }
+.table tbody tr:last-child td { border-bottom: none; }
+.table tbody tr:hover td { background: #f8fafc; }
+
+.dateCell { font-size: 12px; color: #3a4a5e; font-weight: 500; white-space: nowrap; }
+.prixCell { font-weight: 700; white-space: nowrap; }
+.empty { color: #8fa0b4; }
+
+.macBadge { display: inline-flex; padding: 3px 9px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.badge { display: inline-flex; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+
+.totalRow { border-top: 2px solid #1a2332; }
+.totalLabel { padding: 12px 10px; font-size: 13px; font-weight: 700; color: #1a2332; text-align: right; }
+.totalVal { padding: 12px 10px; font-size: 15px; font-weight: 800; color: #1a2332; white-space: nowrap; }
+
+@media (max-width: 768px) {
+  .page { padding: 16px; }
+  .kpiRow { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .kpiVal { font-size: 15px; }
+  .panels { grid-template-columns: 1fr; }
+  .panelFull { grid-column: 1; }
+  .tableWrap, .table { overflow-x: auto; min-width: 600px; }
+}
+@media (max-width: 480px) {
+  .kpiRow { grid-template-columns: repeat(2, 1fr); }
+  .kpiCard { padding: 12px; gap: 8px; }
+}
+
+

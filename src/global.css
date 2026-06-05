@@ -1,0 +1,104 @@
+@import url("https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400&display=swap");
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+
+body {
+  margin: 0;
+  line-height: normal;
+}
+:root {
+  /* Common Style Variables */
+
+  /* Color */
+  --color-aliceblue: #e8ecf2;
+  --color-black: #000;
+  --color-gray-100: #787878;
+  --color-gray-200: #171e1d;
+  --color-gray-300: rgba(0, 0, 0, 0.85);
+  --color-mediumaquamarine: #00c29f;
+  --color-white: #fff;
+  --color-whitesmoke: #f4f4f4;
+
+  /* Gap */
+  --gap-2: 2px;
+  --gap-4: 4px;
+  --gap-5: 5px;
+  --gap-8: 8px;
+  --gap-10: 10px;
+  --gap-12: 12px;
+  --gap-14: 14px;
+  --gap-20: 20px;
+  --gap-24: 24px;
+  --gap-30: 30px;
+
+  /* Padding */
+  --padding-0: 0px;
+  --padding-01: 0;
+  --padding-5: 5px;
+  --padding-6: 6px;
+  --padding-8: 8px;
+  --padding-11: 11px;
+  --padding-12: 12px;
+  --padding-14: 14px;
+  --padding-16: 16px;
+  --padding-20: 20px;
+  --padding-30: 30px;
+
+  /* BorderRadius */
+  --br-6: 6px;
+  --br-10: 10px;
+  --br-13: 13px;
+
+  /* Font */
+  --font-archivo: Archivo, Arial, sans-serif;
+  --font-roboto: Roboto, Arial, sans-serif;
+
+  /* FontSize */
+  --fs-12: 12px;
+  --fs-14: 14px;
+  --fs-16: 16px;
+  --fs-19: 19px;
+  --fs-20: 20px;
+  --fs-24: 24px;
+  --fs-32: 32px;
+
+  /* Borders */
+  --border-1: 1px solid var(--color-aliceblue);
+
+  /* Shadows */
+  --shadow-drop: 0px 6px 12px rgba(0, 0, 0, 0.02);
+
+  /* WidthHeights */
+  --height-10: 10px;
+  --height-13: 13px;
+  --height-20: 20px;
+  --height-22: 22px;
+  --height-28: 28px;
+  --height-30: 30px;
+  --height-56: 56px;
+  --height-60: 60px;
+  --height-300: 300px;
+  --height-408: 408px;
+  --max-w-1340: 1340px;
+  --min-w-120: 120px;
+  --min-w-280: 280px;
+  --min-w-288: 288px;
+  --width-13: 13px;
+  --width-20: 20px;
+  --width-30: 30px;
+  --width-42: 42px;
+  --width-6_7: 6.7px;
+
+  /* LineHeights */
+  --lh-14: 14px;
+  --lh-16: 16px;
+  --lh-19: 19px;
+  --lh-36: 36px;
+
+  /* LetterSpacings */
+  --ls--0_01: -0.01;
+  --ls-0_02: 0.02;
+
+  --left-10: 10px;
+  --top-10: 10px;
+}

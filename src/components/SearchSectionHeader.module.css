@@ -1,0 +1,64 @@
+.searchSectionHeader {
+  align-self: stretch;
+  height: var(--height-60);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--padding-14) var(--padding-0) var(--padding-0);
+  box-sizing: border-box;
+  gap: var(--gap-20);
+  text-align: left;
+  font-size: var(--fs-20);
+  color: var(--color-black);
+  font-family: var(--font-archivo);
+}
+.leftSide {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-2);
+}
+.staysNearby,
+.torontoOntario {
+  margin: 0;
+  position: relative;
+}
+.layoutSelection {
+  border-radius: 9px;
+  background-color: var(--color-white);
+  border: 0.7px solid var(--color-aliceblue);
+  display: flex;
+  align-items: center;
+  padding: var(--padding-5) var(--padding-6);
+}
+.layoutOptions {
+  border-radius: var(--br-6);
+  background-color: var(--color-mediumaquamarine);
+  display: flex;
+  align-items: flex-start;
+  padding: var(--padding-8);
+}
+.bentoMenu1Icon {
+  cursor: pointer;
+  border: 0;
+  padding: var(--padding-01);
+  background-color: transparent;
+  height: var(--height-20);
+  width: var(--width-20);
+  position: relative;
+}
+.layoutOptions2 {
+  display: flex;
+  align-items: flex-start;
+  padding: var(--padding-8);
+}
+@media screen and (max-width: 1350px) {
+  .searchSectionHeader {
+    height: auto;
+    flex-wrap: wrap;
+  }
+  .staysNearby,
+  .torontoOntario {
+    font-size: var(--fs-16);
+    line-height: var(--lh-19);
+  }
+}
