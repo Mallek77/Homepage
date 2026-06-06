@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-https://script.google.com/macros/s/AKfycbzWKE1a7M8P9lBSCP1kEaxDR8mZsJLhZL2Lm2R1p7SoDdomi3yXXArsqokFmLkI4vfi/exec
+https://script.google.com/macros/s/AKfycbzWKE1a7M8P9lBSCP1kEaxDR8mZsJLhZL2Lm2R1p7SoDdomi3yXXArsqokFmLkI4vfi/exec;
 
 export type Mission = {
   id: string;
