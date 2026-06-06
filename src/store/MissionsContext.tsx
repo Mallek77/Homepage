@@ -33,12 +33,18 @@ export function MissionsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetch(API_URL)
-      .then((r) => r.json())
-      .then((data: Mission[]) => {
+      .then((r) => {
+        if (!r.ok) throw new Error("Réponse invalide");
+        return r.json();
+      })
+      .then((data) => {
         setMissions(Array.isArray(data) ? data : []);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setMissions([]);
+        setLoading(false);
+      });
   }, []);
 
   const addMission = async (m: Omit<Mission, "id" | "statut">) => {
