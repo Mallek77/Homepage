@@ -6,7 +6,6 @@ import { useMissions } from "../store/MissionsContext";
 import styles from "./AccessDirect.module.css";
 
 const MACHINES = ["Nissan 30m", "Junior", "37m Tractée"];
-
 const MACHINE_COLOR: Record<
   string,
   { bg: string; color: string; border: string }
@@ -27,19 +26,10 @@ const MACHINE_COLOR: Record<
 const now = new Date();
 const moisCourant = now.getMonth();
 const anneeCourante = now.getFullYear();
+
 const MOIS_NOMS = [
-  "Janvier",
-  "Février",
-  "Mars",
-  "Avril",
-  "Mai",
-  "Juin",
-  "Juillet",
-  "Août",
-  "Septembre",
-  "Octobre",
-  "Novembre",
-  "Décembre",
+  "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+  "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre",
 ];
 
 function joursOuvrablesDuMois(annee: number, mois: number) {
@@ -52,11 +42,17 @@ function joursOuvrablesDuMois(annee: number, mois: number) {
   return count;
 }
 
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr);
+  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+}
+
 const statutLabel: Record<string, string> = {
   active: "Confirmée",
   pending: "En attente",
   completed: "Terminée",
 };
+
 const statutColor: Record<string, string> = {
   active: "#2a9d8f",
   pending: "#e9a227",
@@ -77,25 +73,12 @@ function Donut({
   const offset = circ - (pct / 100) * circ;
   return (
     <svg viewBox="0 0 100 100" width={size} height={size}>
+      <circle cx="50" cy="50" r={r} fill="none" stroke="#edf0f5" strokeWidth="14" />
       <circle
-        cx="50"
-        cy="50"
-        r={r}
-        fill="none"
-        stroke="#edf0f5"
-        strokeWidth="14"
-      />
-      <circle
-        cx="50"
-        cy="50"
-        r={r}
-        fill="none"
-        stroke={color}
-        strokeWidth="14"
-        strokeDasharray={circ}
-        strokeDashoffset={offset}
-        strokeLinecap="round"
-        transform="rotate(-90 50 50)"
+        cx="50" cy="50" r={r} fill="none"
+        stroke={color} strokeWidth="14"
+        strokeDasharray={circ} strokeDashoffset={offset}
+        strokeLinecap="round" transform="rotate(-90 50 50)"
       />
     </svg>
   );
@@ -105,7 +88,6 @@ const AccessDirect: FunctionComponent = () => {
   const navigate = useNavigate();
   const { missions } = useMissions();
 
-  // Missions du mois en cours
   const missionsMois = missions.filter((m) => {
     const d = new Date(m.date);
     return d.getFullYear() === anneeCourante && d.getMonth() === moisCourant;
@@ -113,17 +95,10 @@ const AccessDirect: FunctionComponent = () => {
 
   const joursOuvrables = joursOuvrablesDuMois(anneeCourante, moisCourant);
   const capaciteTotale = MACHINES.length * joursOuvrables;
-  const remplissagePct = Math.round(
-    (missionsMois.length / capaciteTotale) * 100
-  );
+  const remplissagePct = Math.round((missionsMois.length / capaciteTotale) * 100);
 
-  const totalConfirmees = missionsMois.filter(
-    (m) => m.statut === "active"
-  ).length;
-  const totalAttente = missionsMois.filter(
-    (m) => m.statut === "pending"
-  ).length;
-
+  const totalConfirmees = missionsMois.filter((m) => m.statut === "active").length;
+  const totalAttente = missionsMois.filter((m) => m.statut === "pending").length;
   const caTotal = missionsMois.reduce((s, m) => s + Number(m.prix || 0), 0);
   const caEncaisse = missionsMois
     .filter((m) => m.statutPaiement === "Payé")
@@ -136,8 +111,7 @@ const AccessDirect: FunctionComponent = () => {
     mac,
     count: missionsMois.filter((m) => m.machine === mac).length,
     pct: Math.round(
-      (missionsMois.filter((m) => m.machine === mac).length / joursOuvrables) *
-        100
+      (missionsMois.filter((m) => m.machine === mac).length / joursOuvrables) * 100
     ),
   }));
 
@@ -159,17 +133,11 @@ const AccessDirect: FunctionComponent = () => {
               Gestion des 3 machines · Monte-charges industriels
             </p>
             <div className={styles.heroActions}>
-              <button
-                className={styles.btnPrimary}
-                onClick={() => navigate("/planning")}
-              >
+              <button className={styles.btnPrimary} onClick={() => navigate("/planning")}>
                 <Icon name="calendar" size={17} color="#fff" />
                 Voir le planning
               </button>
-              <button
-                className={styles.btnSecondary}
-                onClick={() => navigate("/missions")}
-              >
+              <button className={styles.btnSecondary} onClick={() => navigate("/missions")}>
                 <Icon name="add-task" size={17} color="#1e2d45" />
                 Nouvelle mission
               </button>
@@ -178,22 +146,14 @@ const AccessDirect: FunctionComponent = () => {
           <div className={styles.heroDecor}>
             <div className={styles.decorCircle1} />
             <div className={styles.decorCircle2} />
-            <Icon
-              name="construction"
-              size={110}
-              color="rgba(201,162,39,0.13)"
-              style={{ position: "absolute" }}
-            />
+            <Icon name="construction" size={110} color="rgba(201,162,39,0.13)" style={{ position: "absolute" }} />
           </div>
         </div>
 
         {/* ── Stats du mois ── */}
         <div className={styles.statsRow}>
           <div className={styles.statCard}>
-            <div
-              className={styles.statIcon}
-              style={{ background: "rgba(42,157,143,0.12)" }}
-            >
+            <div className={styles.statIcon} style={{ background: "rgba(42,157,143,0.12)" }}>
               <Icon name="task-alt" size={22} color="#2a9d8f" />
             </div>
             <div className={styles.statInfo}>
@@ -202,10 +162,7 @@ const AccessDirect: FunctionComponent = () => {
             </div>
           </div>
           <div className={styles.statCard}>
-            <div
-              className={styles.statIcon}
-              style={{ background: "rgba(42,157,143,0.12)" }}
-            >
+            <div className={styles.statIcon} style={{ background: "rgba(42,157,143,0.12)" }}>
               <Icon name="check-circle" size={22} color="#2a9d8f" />
             </div>
             <div className={styles.statInfo}>
@@ -214,10 +171,7 @@ const AccessDirect: FunctionComponent = () => {
             </div>
           </div>
           <div className={styles.statCard}>
-            <div
-              className={styles.statIcon}
-              style={{ background: "rgba(233,162,39,0.12)" }}
-            >
+            <div className={styles.statIcon} style={{ background: "rgba(233,162,39,0.12)" }}>
               <Icon name="hourglass" size={22} color="#e9a227" />
             </div>
             <div className={styles.statInfo}>
@@ -226,10 +180,7 @@ const AccessDirect: FunctionComponent = () => {
             </div>
           </div>
           <div className={styles.statCard}>
-            <div
-              className={styles.statIcon}
-              style={{ background: "rgba(109,188,141,0.12)" }}
-            >
+            <div className={styles.statIcon} style={{ background: "rgba(109,188,141,0.12)" }}>
               <Icon name="payments" size={22} color="#6dbc8d" />
             </div>
             <div className={styles.statInfo}>
@@ -251,11 +202,9 @@ const AccessDirect: FunctionComponent = () => {
                 <Donut
                   pct={remplissagePct}
                   color={
-                    remplissagePct > 75
-                      ? "#e9a227"
-                      : remplissagePct > 40
-                      ? "#2a9d8f"
-                      : "#5b8dee"
+                    remplissagePct > 75 ? "#e9a227"
+                    : remplissagePct > 40 ? "#2a9d8f"
+                    : "#5b8dee"
                   }
                   size={130}
                 />
@@ -266,9 +215,7 @@ const AccessDirect: FunctionComponent = () => {
               </div>
               <div className={styles.donutLegend}>
                 <div className={styles.donutStat}>
-                  <span className={styles.donutStatVal}>
-                    {missionsMois.length}
-                  </span>
+                  <span className={styles.donutStatVal}>{missionsMois.length}</span>
                   <span className={styles.donutStatLab}>missions</span>
                 </div>
                 <div className={styles.donutSep} />
@@ -279,9 +226,7 @@ const AccessDirect: FunctionComponent = () => {
               </div>
               <p className={styles.donutNote}>
                 {remplissagePct < 30 && "📅 Planning peu chargé ce mois-ci"}
-                {remplissagePct >= 30 &&
-                  remplissagePct < 70 &&
-                  "✅ Planning en bonne progression"}
+                {remplissagePct >= 30 && remplissagePct < 70 && "✅ Planning en bonne progression"}
                 {remplissagePct >= 70 && "🔥 Planning bien rempli !"}
               </p>
             </div>
@@ -291,76 +236,61 @@ const AccessDirect: FunctionComponent = () => {
           <div className={`${styles.panel} ${styles.panelWide}`}>
             <div className={styles.panelHeader}>
               <h3 className={styles.panelTitle}>Dernières missions</h3>
-              <button
-                className={styles.viewAll}
-                onClick={() => navigate("/planning-en-cours")}
-              >
-                Voir tout{" "}
-                <Icon name="arrow-forward" size={14} color="#2a9d8f" />
+              <button className={styles.viewAll} onClick={() => navigate("/planning-en-cours")}>
+                Voir tout <Icon name="arrow-forward" size={14} color="#2a9d8f" />
               </button>
             </div>
             {dernieresMissions.length === 0 ? (
-              <p
-                style={{
-                  color: "#8fa0b4",
-                  fontSize: 14,
-                  textAlign: "center",
-                  padding: "24px 0",
-                }}
-              >
+              <p style={{ color: "#8fa0b4", fontSize: 14, textAlign: "center", padding: "24px 0" }}>
                 Aucune mission ce mois-ci
               </p>
             ) : (
               <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Machine</th>
-                    <th>Lieu</th>
-                    <th>Statut</th>
-                    <th>Prix</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dernieresMissions.map((m) => (
-                    <tr key={m.id}>
-                      <td className={styles.dateCell}>{m.date}</td>
-                      <td>
-                        <span
-                          className={styles.macBadge}
-                          style={{
-                            background: MACHINE_COLOR[m.machine].bg,
-                            color: MACHINE_COLOR[m.machine].color,
-                            borderLeft: `3px solid ${
-                              MACHINE_COLOR[m.machine].border
-                            }`,
-                          }}
-                        >
-                          {m.machine}
-                        </span>
-                      </td>
-                      <td>{m.lieu || "—"}</td>
-                      <td>
-                        <span
-                          className={styles.badge}
-                          style={{
-                            background: `${statutColor[m.statut]}20`,
-                            color: statutColor[m.statut],
-                          }}
-                        >
-                          {statutLabel[m.statut]}
-                        </span>
-                      </td>
-                      <td className={styles.prixCell}>
-                        {m.prix
-                          ? `${Number(m.prix).toLocaleString("fr-FR")} €`
-                          : "—"}
-                      </td>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Machine</th>
+                      <th className={styles.hideOnMobile}>Lieu</th>
+                      <th>Statut</th>
+                      <th className={styles.hideOnMobile}>Prix</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {dernieresMissions.map((m) => (
+                      <tr key={m.id}>
+                        <td className={styles.dateCell}>{formatDate(m.date)}</td>
+                        <td>
+                          <span
+                            className={styles.macBadge}
+                            style={{
+                              background: MACHINE_COLOR[m.machine].bg,
+                              color: MACHINE_COLOR[m.machine].color,
+                              borderLeft: `3px solid ${MACHINE_COLOR[m.machine].border}`,
+                            }}
+                          >
+                            {m.machine}
+                          </span>
+                        </td>
+                        <td className={styles.hideOnMobile}>{m.lieu || "—"}</td>
+                        <td>
+                          <span
+                            className={styles.badge}
+                            style={{
+                              background: `${statutColor[m.statut]}20`,
+                              color: statutColor[m.statut],
+                            }}
+                          >
+                            {statutLabel[m.statut]}
+                          </span>
+                        </td>
+                        <td className={`${styles.prixCell} ${styles.hideOnMobile}`}>
+                          {m.prix ? `${Number(m.prix).toLocaleString("fr-FR")} €` : "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
@@ -382,32 +312,22 @@ const AccessDirect: FunctionComponent = () => {
                     <div className={styles.progressBar}>
                       <div
                         className={styles.progressFill}
-                        style={{
-                          width: `${Math.min(pct, 100)}%`,
-                          background: col.border,
-                        }}
+                        style={{ width: `${Math.min(pct, 100)}%`, background: col.border }}
                       />
                     </div>
-                    <span className={styles.machinePct}>
-                      {pct}% de taux d'utilisation
-                    </span>
+                    <span className={styles.machinePct}>{pct}% de taux d'utilisation</span>
                   </div>
                 );
               })}
             </div>
-
             <div className={styles.paiementBox}>
               <div className={styles.paiementRow}>
                 <span>Encaissé</span>
-                <strong style={{ color: "#2a9d8f" }}>
-                  {caEncaisse.toLocaleString("fr-FR")} €
-                </strong>
+                <strong style={{ color: "#2a9d8f" }}>{caEncaisse.toLocaleString("fr-FR")} €</strong>
               </div>
               <div className={styles.paiementRow}>
                 <span>En attente</span>
-                <strong style={{ color: "#e9a227" }}>
-                  {caAttenteVal.toLocaleString("fr-FR")} €
-                </strong>
+                <strong style={{ color: "#e9a227" }}>{caAttenteVal.toLocaleString("fr-FR")} €</strong>
               </div>
             </div>
           </div>
