@@ -87,7 +87,7 @@
 .viewAll:hover { opacity: 0.75; }
 
 /* Table */
-.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tableWrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }.table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 420px; }
 .table thead tr { border-bottom: 2px solid #edf0f5; }
 .table th { text-align: left; padding: 8px 10px; font-size: 10px; font-weight: 700; color: #4a5a6e; text-transform: uppercase; letter-spacing: 0.06em; }
 .table td { padding: 10px 10px; border-bottom: 1px solid #edf0f5; color: #1a2332; vertical-align: middle; }
