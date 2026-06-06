@@ -9,26 +9,22 @@ const MOIS_NOMS = [
   "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
   "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre",
 ];
-
 const JOURS_COURTS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
-const MACHINE_COLOR: Record<
-  string,
-  { bg: string; border: string; text: string; dark: string }
-> = {
+const MACHINE_COLOR: Record<string, { bg: string; border: string; text: string; dark: string }> = {
   "Nissan 30m": { bg: "rgba(91,141,238,0.15)", border: "#5b8dee", text: "#5b8dee", dark: "#3a6abf" },
   Junior: { bg: "rgba(42,157,143,0.15)", border: "#2a9d8f", text: "#2ddec8", dark: "#1e7a6e" },
   "37m Tractée": { bg: "rgba(233,162,39,0.15)", border: "#e9a227", text: "#f5c55a", dark: "#c07800" },
 };
 
+const MACHINE_COLOR_FALLBACK = { bg: "rgba(150,150,150,0.15)", border: "#888", text: "#888", dark: "#555" };
+
 const STATUT_COLOR: Record<string, string> = {
   active: "#2a9d8f", pending: "#e9a227", completed: "#6dbc8d",
 };
-
 const STATUT_LABEL: Record<string, string> = {
   active: "Confirmée", pending: "En attente", completed: "Terminée",
 };
-
 const PAIEMENT_COLOR: Record<string, { bg: string; text: string }> = {
   Payé: { bg: "rgba(109,188,141,0.22)", text: "#6dbc8d" },
   "En attente": { bg: "rgba(233,162,39,0.22)", text: "#f5c55a" },
@@ -41,13 +37,11 @@ function toYMD(d: Date) {
   const day = String(d.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
-
 function addDays(d: Date, n: number) {
   const r = new Date(d);
   r.setDate(r.getDate() + n);
   return r;
 }
-
 function getMonday(d: Date) {
   const r = new Date(d);
   const day = r.getDay();
@@ -55,7 +49,6 @@ function getMonday(d: Date) {
   r.setHours(0, 0, 0, 0);
   return r;
 }
-
 function formatDate(d: Date) {
   return `${JOURS_COURTS[d.getDay()]} ${d.getDate()} ${MOIS_NOMS[d.getMonth()]}`;
 }
@@ -73,12 +66,12 @@ const CalendrierPlanning: FunctionComponent = () => {
   const [filterMachine, setFilterMachine] = useState("Toutes");
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
 
-  // Générer les 7 jours de la semaine pour la vue semaine
   const semaineJours = Array.from({ length: 7 }, (_, i) => toYMD(addDays(weekStart, i)));
 
-  const missionsFiltrees = missions
+  const missionsFiltrees = (missions ?? [])
     .filter((m) => filterMachine === "Toutes" || m.machine === filterMachine)
     .filter((m) => {
+      if (!m || !m.date) return false;
       if (view === "tout") return true;
       if (view === "semaine") {
         const endWeek = toYMD(addDays(weekStart, 6));
@@ -96,14 +89,11 @@ const CalendrierPlanning: FunctionComponent = () => {
     parDate[m.date].push(m);
   });
 
-  // Pour vue mois/tout : seulement les dates avec missions
-  // Pour vue semaine : toujours les 7 jours
   const dates = view === "semaine"
     ? semaineJours
     : Object.keys(parDate).sort();
 
   const isWeekPast = weekStart < getMonday(new Date());
-
   const prevWeek = () => setWeekStart((d) => addDays(d, -7));
   const nextWeek = () => setWeekStart((d) => addDays(d, 7));
   const goToday = () => setWeekStart(getMonday(new Date()));
@@ -192,7 +182,7 @@ const CalendrierPlanning: FunctionComponent = () => {
           </div>
         )}
 
-        {/* ── Contenu vide (mois/tout seulement) ── */}
+        {/* ── Contenu vide ── */}
         {showEmpty ? (
           <div className={styles.empty}>
             <Icon name="calendar" size={40} color="#4a5a6e" />
@@ -212,7 +202,6 @@ const CalendrierPlanning: FunctionComponent = () => {
               const dayMissions = parDate[date] || [];
               return (
                 <div key={date} className={styles.dayGroup}>
-                  {/* ── En-tête du jour ── */}
                   <div className={`${styles.dayBanner} ${isToday ? styles.dayBannerToday : ""} ${isPast ? styles.dayBannerPast : ""}`}>
                     <div className={styles.dayBannerLeft}>
                       <span className={`${styles.dayCircle} ${isToday ? styles.dayCircleToday : ""}`}>
@@ -238,19 +227,18 @@ const CalendrierPlanning: FunctionComponent = () => {
                     </div>
                   </div>
 
-                  {/* ── Jour vide ── */}
                   {dayMissions.length === 0 && (
                     <div className={styles.dayEmpty}>
                       <span>Aucune mission</span>
                     </div>
                   )}
 
-                  {/* ── MOBILE : cartes compactes ── */}
+                  {/* ── MOBILE ── */}
                   {dayMissions.length > 0 && (
                     <div className={styles.cardList}>
                       {dayMissions.map((m) => {
-                        const col = MACHINE_COLOR[m.machine];
-                        const pai = m.statutPaiement ? PAIEMENT_COLOR[m.statutPaiement] : null;
+                        const col = MACHINE_COLOR[m.machine] ?? MACHINE_COLOR_FALLBACK;
+                        const pai = m.statutPaiement ? PAIEMENT_COLOR[m.statutPaiement] ?? null : null;
                         return (
                           <div
                             key={m.id}
@@ -271,8 +259,8 @@ const CalendrierPlanning: FunctionComponent = () => {
                                     {m.statutPaiement}
                                   </span>
                                 )}
-                                <span className={styles.cardStatut} style={{ background: `${STATUT_COLOR[m.statut]}22`, color: STATUT_COLOR[m.statut] }}>
-                                  {STATUT_LABEL[m.statut]}
+                                <span className={styles.cardStatut} style={{ background: `${STATUT_COLOR[m.statut] ?? "#888"}22`, color: STATUT_COLOR[m.statut] ?? "#888" }}>
+                                  {STATUT_LABEL[m.statut] ?? m.statut}
                                 </span>
                               </div>
                             </div>
@@ -294,7 +282,7 @@ const CalendrierPlanning: FunctionComponent = () => {
                     </div>
                   )}
 
-                  {/* ── DESKTOP : tableau ── */}
+                  {/* ── DESKTOP ── */}
                   {dayMissions.length > 0 && (
                     <div className={styles.tableWrap}>
                       <table className={styles.table}>
@@ -307,8 +295,8 @@ const CalendrierPlanning: FunctionComponent = () => {
                         </thead>
                         <tbody>
                           {dayMissions.map((m) => {
-                            const col = MACHINE_COLOR[m.machine];
-                            const pai = m.statutPaiement ? PAIEMENT_COLOR[m.statutPaiement] : null;
+                            const col = MACHINE_COLOR[m.machine] ?? MACHINE_COLOR_FALLBACK;
+                            const pai = m.statutPaiement ? PAIEMENT_COLOR[m.statutPaiement] ?? null : null;
                             return (
                               <tr key={m.id} className={isPast ? styles.rowPast : ""} onClick={() => setSelectedMission(m)}>
                                 <td className={styles.heureCell}>{m.heure}</td>
@@ -327,8 +315,8 @@ const CalendrierPlanning: FunctionComponent = () => {
                                   ) : <span className={styles.dash}>—</span>}
                                 </td>
                                 <td>
-                                  <span className={styles.statBadge} style={{ background: `${STATUT_COLOR[m.statut]}22`, color: STATUT_COLOR[m.statut] }}>
-                                    {STATUT_LABEL[m.statut]}
+                                  <span className={styles.statBadge} style={{ background: `${STATUT_COLOR[m.statut] ?? "#888"}22`, color: STATUT_COLOR[m.statut] ?? "#888" }}>
+                                    {STATUT_LABEL[m.statut] ?? m.statut}
                                   </span>
                                 </td>
                                 <td className={styles.prixCell}>
@@ -356,81 +344,84 @@ const CalendrierPlanning: FunctionComponent = () => {
         )}
 
         {/* ── Modal détail ── */}
-        {selectedMission && (
-          <div className={styles.overlay} onClick={() => setSelectedMission(null)}>
-            <div className={styles.panel} onClick={(e) => e.stopPropagation()}>
-              <div className={styles.panelHeader} style={{ borderLeft: `4px solid ${MACHINE_COLOR[selectedMission.machine].border}` }}>
-                <div>
-                  <span className={styles.panelId}>{selectedMission.id}</span>
-                  <h3 className={styles.panelMachine}>{selectedMission.machine}</h3>
+        {selectedMission && (() => {
+          const col = MACHINE_COLOR[selectedMission.machine] ?? MACHINE_COLOR_FALLBACK;
+          return (
+            <div className={styles.overlay} onClick={() => setSelectedMission(null)}>
+              <div className={styles.panel} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.panelHeader} style={{ borderLeft: `4px solid ${col.border}` }}>
+                  <div>
+                    <span className={styles.panelId}>{selectedMission.id}</span>
+                    <h3 className={styles.panelMachine}>{selectedMission.machine}</h3>
+                  </div>
+                  <button className={styles.closeBtn} onClick={() => setSelectedMission(null)}>
+                    <Icon name="close" size={20} color="#aab4c4" />
+                  </button>
                 </div>
-                <button className={styles.closeBtn} onClick={() => setSelectedMission(null)}>
-                  <Icon name="close" size={20} color="#aab4c4" />
-                </button>
-              </div>
-              <div className={styles.panelBody}>
-                <div className={styles.panelRow}>
-                  <Icon name="calendar-today" size={16} color="#5b8dee" />
-                  <span>{selectedMission.date} à {selectedMission.heure}</span>
-                </div>
-                {selectedMission.nomEntreprise && (
+                <div className={styles.panelBody}>
                   <div className={styles.panelRow}>
-                    <Icon name="person" size={16} color="#5b8dee" />
-                    <span>{selectedMission.nomEntreprise}</span>
+                    <Icon name="calendar-today" size={16} color="#5b8dee" />
+                    <span>{selectedMission.date} à {selectedMission.heure}</span>
                   </div>
-                )}
-                {selectedMission.lieu && (
-                  <div className={styles.panelRow}>
-                    <Icon name="place" size={16} color="#5b8dee" />
-                    <span>{selectedMission.lieu}</span>
-                  </div>
-                )}
-                {selectedMission.telephone && (
-                  <div className={styles.panelRow}>
-                    <Icon name="phone" size={16} color="#5b8dee" />
-                    <span>{selectedMission.telephone}</span>
-                  </div>
-                )}
-                {selectedMission.email && (
-                  <div className={styles.panelRow}>
-                    <Icon name="email" size={16} color="#5b8dee" />
-                    <span>{selectedMission.email}</span>
-                  </div>
-                )}
-                {selectedMission.prix && (
-                  <div className={styles.panelRow}>
-                    <Icon name="payments" size={16} color="#5b8dee" />
-                    <span className={styles.panelPrix}>{selectedMission.prix} €</span>
-                  </div>
-                )}
-                {selectedMission.remarque && (
-                  <div className={styles.panelRow}>
-                    <Icon name="notes" size={16} color="#5b8dee" />
-                    <span className={styles.panelRemarque}>{selectedMission.remarque}</span>
-                  </div>
-                )}
-                <div className={styles.panelBadges}>
-                  <span className={styles.panelBadge} style={{ background: `${STATUT_COLOR[selectedMission.statut]}22`, color: STATUT_COLOR[selectedMission.statut] }}>
-                    {STATUT_LABEL[selectedMission.statut]}
-                  </span>
-                  {selectedMission.statutPaiement && PAIEMENT_COLOR[selectedMission.statutPaiement] && (
-                    <span className={styles.panelBadge} style={{ background: PAIEMENT_COLOR[selectedMission.statutPaiement].bg, color: PAIEMENT_COLOR[selectedMission.statutPaiement].text }}>
-                      {selectedMission.statutPaiement}
-                    </span>
+                  {selectedMission.nomEntreprise && (
+                    <div className={styles.panelRow}>
+                      <Icon name="person" size={16} color="#5b8dee" />
+                      <span>{selectedMission.nomEntreprise}</span>
+                    </div>
                   )}
+                  {selectedMission.lieu && (
+                    <div className={styles.panelRow}>
+                      <Icon name="place" size={16} color="#5b8dee" />
+                      <span>{selectedMission.lieu}</span>
+                    </div>
+                  )}
+                  {selectedMission.telephone && (
+                    <div className={styles.panelRow}>
+                      <Icon name="phone" size={16} color="#5b8dee" />
+                      <span>{selectedMission.telephone}</span>
+                    </div>
+                  )}
+                  {selectedMission.email && (
+                    <div className={styles.panelRow}>
+                      <Icon name="email" size={16} color="#5b8dee" />
+                      <span>{selectedMission.email}</span>
+                    </div>
+                  )}
+                  {selectedMission.prix && (
+                    <div className={styles.panelRow}>
+                      <Icon name="payments" size={16} color="#5b8dee" />
+                      <span className={styles.panelPrix}>{selectedMission.prix} €</span>
+                    </div>
+                  )}
+                  {selectedMission.remarque && (
+                    <div className={styles.panelRow}>
+                      <Icon name="notes" size={16} color="#5b8dee" />
+                      <span className={styles.panelRemarque}>{selectedMission.remarque}</span>
+                    </div>
+                  )}
+                  <div className={styles.panelBadges}>
+                    <span className={styles.panelBadge} style={{ background: `${STATUT_COLOR[selectedMission.statut] ?? "#888"}22`, color: STATUT_COLOR[selectedMission.statut] ?? "#888" }}>
+                      {STATUT_LABEL[selectedMission.statut] ?? selectedMission.statut}
+                    </span>
+                    {selectedMission.statutPaiement && PAIEMENT_COLOR[selectedMission.statutPaiement] && (
+                      <span className={styles.panelBadge} style={{ background: PAIEMENT_COLOR[selectedMission.statutPaiement].bg, color: PAIEMENT_COLOR[selectedMission.statutPaiement].text }}>
+                        {selectedMission.statutPaiement}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className={styles.panelFooter}>
-                <button className={styles.editBtn} onClick={() => navigate("/missions")}>
-                  <Icon name="edit" size={15} color="#fff" /> Modifier
-                </button>
-                <button className={styles.closeTextBtn} onClick={() => setSelectedMission(null)}>
-                  Fermer
-                </button>
+                <div className={styles.panelFooter}>
+                  <button className={styles.editBtn} onClick={() => navigate("/missions")}>
+                    <Icon name="edit" size={15} color="#fff" /> Modifier
+                  </button>
+                  <button className={styles.closeTextBtn} onClick={() => setSelectedMission(null)}>
+                    Fermer
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
       </div>
     </AppLayout>
   );
