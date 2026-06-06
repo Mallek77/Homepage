@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 import Icon from "../components/Icon";
 import styles from "./Login.module.css";
 
+const USERS = [
+  { username: "Abdou", password: "azur2024" },
+  { username: "Mikel", password: "azur2024" },
+  { username: "Jennifer", password: "azur2024" },
+];
+
 const Login: FunctionComponent = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -21,7 +27,15 @@ const Login: FunctionComponent = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      navigate("/menu");
+      const user = USERS.find(
+        (u) => u.username === email && u.password === password
+      );
+      if (user) {
+        localStorage.setItem("username", user.username);
+        navigate("/menu");
+      } else {
+        setError("Identifiant ou mot de passe incorrect.");
+      }
     }, 800);
   };
 
@@ -35,10 +49,8 @@ const Login: FunctionComponent = () => {
           <h1 className={styles.logoName}>Azur&nbsp;Levage</h1>
           <p className={styles.logoSub}>Gestion des missions &amp; planning</p>
         </div>
-
         <form className={styles.form} onSubmit={handleLogin}>
           <h2 className={styles.title}>Connexion</h2>
-
           <div className={styles.field}>
             <label className={styles.label}>Identifiant</label>
             <div className={styles.inputWrap}>
@@ -46,13 +58,12 @@ const Login: FunctionComponent = () => {
               <input
                 type="text"
                 className={styles.input}
-                placeholder="Nom d'utilisateur ou email"
+                placeholder="Votre prénom"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
           </div>
-
           <div className={styles.field}>
             <label className={styles.label}>Mot de passe</label>
             <div className={styles.inputWrap}>
@@ -77,9 +88,7 @@ const Login: FunctionComponent = () => {
               </button>
             </div>
           </div>
-
           {error && <p className={styles.error}>{error}</p>}
-
           <button type="submit" className={styles.btnLogin} disabled={loading}>
             {loading ? "Connexion..." : "Se connecter"}
           </button>
