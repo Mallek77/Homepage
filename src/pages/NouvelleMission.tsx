@@ -2,7 +2,7 @@ import { FunctionComponent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "../components/AppLayout";
 import Icon from "../components/Icon";
-import { useMissions } from "../store/MissionsContext";
+import { useMissions, Mission } from "../store/MissionsContext";
 import styles from "./NouvelleMission.module.css";
 
 const machines = ["Nissan 30m", "Junior", "37m Tractée"] as const;
