@@ -144,7 +144,12 @@
   font-size: 13px; color: #2a3a4e; font-weight: 500; white-space: nowrap; gap: 8px;
 }
 .paiementRow strong { font-size: 14px; white-space: nowrap; }
-
+.hideOnMobile {
+  display: table-cell;
+}
+@media (max-width: 600px) {
+  .hideOnMobile { display: none; }
+}
 
 
 
