@@ -311,6 +311,7 @@ const AccessDirect: FunctionComponent = () => {
                 Aucune mission ce mois-ci
               </p>
             ) : (
+              <div className={styles.tableWrap}>
               <table className={styles.table}>
                 <thead>
                   <tr>
@@ -360,6 +361,7 @@ const AccessDirect: FunctionComponent = () => {
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
 
