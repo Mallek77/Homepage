@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+mport { createContext, useContext, useState, useEffect, ReactNode } from "react";
+
+const API_URL = "https://script.google.com/macros/s/AKfycbyqxkK7jtGi52WZ4klbxnHskmvIrDH5-AwkA_pCemQ7SHSCeZtF5IVYn2dXpxLdgGOe/exec";
 
 export type Mission = {
   id: string;
@@ -17,110 +19,59 @@ export type Mission = {
 
 type MissionsContextType = {
   missions: Mission[];
-  addMission: (m: Omit<Mission, "id" | "statut">) => void;
-  updateMission: (m: Mission) => void;
-  deleteMission: (id: string) => void;
+  loading: boolean;
+  addMission: (m: Omit<Mission, "id" | "statut">) => Promise<void>;
+  updateMission: (m: Mission) => Promise<void>;
+  deleteMission: (id: string) => Promise<void>;
 };
 
 const MissionsContext = createContext<MissionsContextType | null>(null);
 
-const INITIAL: Mission[] = [
-  {
-    id: "M001",
-    machine: "Junior",
-    nomEntreprise: "",
-    telephone: "0612647434",
-    email: "",
-    lieu: "63 AV Vallauris",
-    date: "2026-06-05",
-    heure: "9H",
-    statutPaiement: "En attente",
-    prix: "320",
-    remarque: "",
-    statut: "active",
-  },
-  {
-    id: "M002",
-    machine: "Nissan 30m",
-    nomEntreprise: "Azur Levage",
-    telephone: "",
-    email: "",
-    lieu: "Nice Centre",
-    date: "2026-06-03",
-    heure: "8H",
-    statutPaiement: "En attente",
-    prix: "450",
-    remarque: "",
-    statut: "pending",
-  },
-  {
-    id: "M003",
-    machine: "37m Tractée",
-    nomEntreprise: "ProConstruct",
-    telephone: "",
-    email: "",
-    lieu: "Cannes",
-    date: "2026-06-04",
-    heure: "10H",
-    statutPaiement: "Payé",
-    prix: "680",
-    remarque: "",
-    statut: "completed",
-  },
-  {
-    id: "M004",
-    machine: "Junior",
-    nomEntreprise: "SkyBuild",
-    telephone: "",
-    email: "",
-    lieu: "Antibes",
-    date: "2026-06-06",
-    heure: "14H",
-    statutPaiement: "En attente",
-    prix: "280",
-    remarque: "",
-    statut: "active",
-  },
-  {
-    id: "M005",
-    machine: "Nissan 30m",
-    nomEntreprise: "TechLevage",
-    telephone: "",
-    email: "",
-    lieu: "Monaco",
-    date: "2026-06-07",
-    heure: "9H",
-    statutPaiement: "En attente",
-    prix: "520",
-    remarque: "",
-    statut: "pending",
-  },
-];
-
 export function MissionsProvider({ children }: { children: ReactNode }) {
-  const [missions, setMissions] = useState<Mission[]>(INITIAL);
+  const [missions, setMissions] = useState<Mission[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addMission = (m: Omit<Mission, "id" | "statut">) => {
+  useEffect(() => {
+    fetch(API_URL)
+      .then((r) => r.json())
+      .then((data: Mission[]) => {
+        setMissions(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const addMission = async (m: Omit<Mission, "id" | "statut">) => {
     const newMission: Mission = {
       ...m,
       id: `M${String(Date.now()).slice(-4)}`,
       statut: m.statutPaiement === "Payé" ? "completed" : "active",
     };
     setMissions((prev) => [...prev, newMission]);
+    await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "add", ...newMission }),
+    });
   };
 
-  const updateMission = (updated: Mission) => {
+  const updateMission = async (updated: Mission) => {
     setMissions((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
+    await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "update", ...updated }),
+    });
   };
 
-  const deleteMission = (id: string) => {
+  const deleteMission = async (id: string) => {
     setMissions((prev) => prev.filter((m) => m.id !== id));
+    await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "delete", id }),
+    });
   };
 
   return (
-    <MissionsContext.Provider
-      value={{ missions, addMission, updateMission, deleteMission }}
-    >
+    <MissionsContext.Provider value={{ missions, loading, addMission, updateMission, deleteMission }}>
       {children}
     </MissionsContext.Provider>
   );
