@@ -16,36 +16,17 @@ const MACHINE_COLOR: Record<
   string,
   { bg: string; border: string; text: string; dark: string }
 > = {
-  "Nissan 30m": {
-    bg: "rgba(91,141,238,0.15)",
-    border: "#5b8dee",
-    text: "#5b8dee",
-    dark: "#3a6abf",
-  },
-  Junior: {
-    bg: "rgba(42,157,143,0.15)",
-    border: "#2a9d8f",
-    text: "#2ddec8",
-    dark: "#1e7a6e",
-  },
-  "37m Tractée": {
-    bg: "rgba(233,162,39,0.15)",
-    border: "#e9a227",
-    text: "#f5c55a",
-    dark: "#c07800",
-  },
+  "Nissan 30m": { bg: "rgba(91,141,238,0.15)", border: "#5b8dee", text: "#5b8dee", dark: "#3a6abf" },
+  Junior: { bg: "rgba(42,157,143,0.15)", border: "#2a9d8f", text: "#2ddec8", dark: "#1e7a6e" },
+  "37m Tractée": { bg: "rgba(233,162,39,0.15)", border: "#e9a227", text: "#f5c55a", dark: "#c07800" },
 };
 
 const STATUT_COLOR: Record<string, string> = {
-  active: "#2a9d8f",
-  pending: "#e9a227",
-  completed: "#6dbc8d",
+  active: "#2a9d8f", pending: "#e9a227", completed: "#6dbc8d",
 };
 
 const STATUT_LABEL: Record<string, string> = {
-  active: "Confirmée",
-  pending: "En attente",
-  completed: "Terminée",
+  active: "Confirmée", pending: "En attente", completed: "Terminée",
 };
 
 const PAIEMENT_COLOR: Record<string, { bg: string; text: string }> = {
@@ -84,12 +65,13 @@ const CalendrierPlanning: FunctionComponent = () => {
   const [view, setView] = useState<"semaine" | "mois" | "tout">("semaine");
   const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
   const [monthDate, setMonthDate] = useState(() => {
-    const d = new Date();
-    d.setDate(1);
-    return d;
+    const d = new Date(); d.setDate(1); return d;
   });
   const [filterMachine, setFilterMachine] = useState("Toutes");
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
+
+  // Générer les 7 jours de la semaine pour la vue semaine
+  const semaineJours = Array.from({ length: 7 }, (_, i) => toYMD(addDays(weekStart, i)));
 
   const missionsFiltrees = missions
     .filter((m) => filterMachine === "Toutes" || m.machine === filterMachine)
@@ -111,7 +93,12 @@ const CalendrierPlanning: FunctionComponent = () => {
     parDate[m.date].push(m);
   });
 
-  const dates = Object.keys(parDate).sort();
+  // Pour vue mois/tout : seulement les dates avec missions
+  // Pour vue semaine : toujours les 7 jours
+  const dates = view === "semaine"
+    ? semaineJours
+    : Object.keys(parDate).sort();
+
   const isWeekPast = weekStart < getMonday(new Date());
 
   const prevWeek = () => setWeekStart((d) => addDays(d, -7));
@@ -130,6 +117,8 @@ const CalendrierPlanning: FunctionComponent = () => {
       : view === "mois"
       ? `${MOIS_NOMS[monthDate.getMonth()]} ${monthDate.getFullYear()}`
       : "Toutes les missions";
+
+  const showEmpty = view !== "semaine" && dates.length === 0;
 
   return (
     <AppLayout>
@@ -200,8 +189,8 @@ const CalendrierPlanning: FunctionComponent = () => {
           </div>
         )}
 
-        {/* ── Contenu vide ── */}
-        {dates.length === 0 ? (
+        {/* ── Contenu vide (mois/tout seulement) ── */}
+        {showEmpty ? (
           <div className={styles.empty}>
             <Icon name="calendar" size={40} color="#4a5a6e" />
             <p>Aucune mission sur cette période</p>
@@ -217,7 +206,7 @@ const CalendrierPlanning: FunctionComponent = () => {
               const d = new Date(date);
               const isToday = date === todayYMD;
               const isPast = date < todayYMD;
-              const dayMissions = parDate[date];
+              const dayMissions = parDate[date] || [];
               return (
                 <div key={date} className={styles.dayGroup}>
                   {/* ── En-tête du jour ── */}
@@ -234,7 +223,9 @@ const CalendrierPlanning: FunctionComponent = () => {
                     </div>
                     <div className={styles.dayBannerRight}>
                       <span className={styles.dayCount}>
-                        {dayMissions.length} mission{dayMissions.length > 1 ? "s" : ""}
+                        {dayMissions.length > 0
+                          ? `${dayMissions.length} mission${dayMissions.length > 1 ? "s" : ""}`
+                          : "Libre"}
                       </span>
                       {!isPast && (
                         <button className={styles.addDayBtn} onClick={() => navigate("/missions")}>
@@ -244,120 +235,117 @@ const CalendrierPlanning: FunctionComponent = () => {
                     </div>
                   </div>
 
-                  {/* ── MOBILE : cartes compactes ── */}
-                  <div className={styles.cardList}>
-                    {dayMissions.map((m) => {
-                      const col = MACHINE_COLOR[m.machine];
-                      const pai = m.statutPaiement ? PAIEMENT_COLOR[m.statutPaiement] : null;
-                      return (
-                        <div
-                          key={m.id}
-                          className={`${styles.card} ${isPast ? styles.cardPast : ""}`}
-                          onClick={() => setSelectedMission(m)}
-                          style={{ borderLeft: `4px solid ${col.border}` }}
-                        >
-                          <div className={styles.cardTop}>
-                            <div className={styles.cardLeft}>
-                              <span className={styles.cardHeure}>{m.heure}</span>
-                              <span className={styles.cardMachine} style={{ color: col.text, background: col.bg }}>
-                                {m.machine}
-                              </span>
-                            </div>
-                            <div className={styles.cardRight}>
-                              {pai && (
-                                <span className={styles.cardPaie} style={{ background: pai.bg, color: pai.text }}>
-                                  {m.statutPaiement}
-                                </span>
-                              )}
-                              <span
-                                className={styles.cardStatut}
-                                style={{ background: `${STATUT_COLOR[m.statut]}22`, color: STATUT_COLOR[m.statut] }}
-                              >
-                                {STATUT_LABEL[m.statut]}
-                              </span>
-                            </div>
-                          </div>
-                          <div className={styles.cardBottom}>
-                            <span className={styles.cardEntreprise}>
-                              {m.nomEntreprise || <span className={styles.cardDash}>—</span>}
-                            </span>
-                            {m.lieu && (
-                              <span className={styles.cardLieu}>
-                                <Icon name="place" size={12} color="#8fa0b4" />
-                                {m.lieu}
-                              </span>
-                            )}
-                            {m.prix && <span className={styles.cardPrix}>{m.prix} €</span>}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  {/* ── Jour vide ── */}
+                  {dayMissions.length === 0 && (
+                    <div className={styles.dayEmpty}>
+                      <span>Aucune mission</span>
+                    </div>
+                  )}
 
-                  {/* ── DESKTOP : tableau ── */}
-                  <div className={styles.tableWrap}>
-                    <table className={styles.table}>
-                      <thead>
-                        <tr>
-                          <th>Heure</th>
-                          <th>Machine</th>
-                          <th>Entreprise</th>
-                          <th>Lieu</th>
-                          <th>Paiement</th>
-                          <th>Statut</th>
-                          <th>Prix</th>
-                          <th>Remarque</th>
-                          <th></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {dayMissions.map((m) => {
-                          const col = MACHINE_COLOR[m.machine];
-                          const pai = m.statutPaiement ? PAIEMENT_COLOR[m.statutPaiement] : null;
-                          return (
-                            <tr key={m.id} className={isPast ? styles.rowPast : ""} onClick={() => setSelectedMission(m)}>
-                              <td className={styles.heureCell}>{m.heure}</td>
-                              <td>
-                                <span className={styles.macBadge} style={{ color: col.text, background: col.bg, borderLeft: `3px solid ${col.border}` }}>
+                  {/* ── MOBILE : cartes compactes ── */}
+                  {dayMissions.length > 0 && (
+                    <div className={styles.cardList}>
+                      {dayMissions.map((m) => {
+                        const col = MACHINE_COLOR[m.machine];
+                        const pai = m.statutPaiement ? PAIEMENT_COLOR[m.statutPaiement] : null;
+                        return (
+                          <div
+                            key={m.id}
+                            className={`${styles.card} ${isPast ? styles.cardPast : ""}`}
+                            onClick={() => setSelectedMission(m)}
+                            style={{ borderLeft: `4px solid ${col.border}` }}
+                          >
+                            <div className={styles.cardTop}>
+                              <div className={styles.cardLeft}>
+                                <span className={styles.cardHeure}>{m.heure}</span>
+                                <span className={styles.cardMachine} style={{ color: col.text, background: col.bg }}>
                                   {m.machine}
                                 </span>
-                              </td>
-                              <td>{m.nomEntreprise || <span className={styles.dash}>—</span>}</td>
-                              <td>{m.lieu || <span className={styles.dash}>—</span>}</td>
-                              <td>
-                                {pai ? (
-                                  <span className={styles.paieBadge} style={{ background: pai.bg, color: pai.text }}>
+                              </div>
+                              <div className={styles.cardRight}>
+                                {pai && (
+                                  <span className={styles.cardPaie} style={{ background: pai.bg, color: pai.text }}>
                                     {m.statutPaiement}
                                   </span>
-                                ) : (
-                                  <span className={styles.dash}>—</span>
                                 )}
-                              </td>
-                              <td>
-                                <span className={styles.statBadge} style={{ background: `${STATUT_COLOR[m.statut]}22`, color: STATUT_COLOR[m.statut] }}>
+                                <span className={styles.cardStatut} style={{ background: `${STATUT_COLOR[m.statut]}22`, color: STATUT_COLOR[m.statut] }}>
                                   {STATUT_LABEL[m.statut]}
                                 </span>
-                              </td>
-                              <td className={styles.prixCell}>
-                                {m.prix ? `${m.prix} €` : <span className={styles.dash}>—</span>}
-                              </td>
-                              <td className={styles.remarqueCell}>
-                                {m.remarque || <span className={styles.dash}>—</span>}
-                              </td>
-                              <td>
-                                <button
-                                  className={styles.detailBtn}
-                                  onClick={(e) => { e.stopPropagation(); setSelectedMission(m); }}
-                                >
-                                  <Icon name="visibility" size={15} color="#8fa0b4" />
-                                </button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                              </div>
+                            </div>
+                            <div className={styles.cardBottom}>
+                              <span className={styles.cardEntreprise}>
+                                {m.nomEntreprise || <span className={styles.cardDash}>—</span>}
+                              </span>
+                              {m.lieu && (
+                                <span className={styles.cardLieu}>
+                                  <Icon name="place" size={12} color="#8fa0b4" />
+                                  {m.lieu}
+                                </span>
+                              )}
+                              {m.prix && <span className={styles.cardPrix}>{m.prix} €</span>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* ── DESKTOP : tableau ── */}
+                  {dayMissions.length > 0 && (
+                    <div className={styles.tableWrap}>
+                      <table className={styles.table}>
+                        <thead>
+                          <tr>
+                            <th>Heure</th><th>Machine</th><th>Entreprise</th>
+                            <th>Lieu</th><th>Paiement</th><th>Statut</th>
+                            <th>Prix</th><th>Remarque</th><th></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {dayMissions.map((m) => {
+                            const col = MACHINE_COLOR[m.machine];
+                            const pai = m.statutPaiement ? PAIEMENT_COLOR[m.statutPaiement] : null;
+                            return (
+                              <tr key={m.id} className={isPast ? styles.rowPast : ""} onClick={() => setSelectedMission(m)}>
+                                <td className={styles.heureCell}>{m.heure}</td>
+                                <td>
+                                  <span className={styles.macBadge} style={{ color: col.text, background: col.bg, borderLeft: `3px solid ${col.border}` }}>
+                                    {m.machine}
+                                  </span>
+                                </td>
+                                <td>{m.nomEntreprise || <span className={styles.dash}>—</span>}</td>
+                                <td>{m.lieu || <span className={styles.dash}>—</span>}</td>
+                                <td>
+                                  {pai ? (
+                                    <span className={styles.paieBadge} style={{ background: pai.bg, color: pai.text }}>
+                                      {m.statutPaiement}
+                                    </span>
+                                  ) : <span className={styles.dash}>—</span>}
+                                </td>
+                                <td>
+                                  <span className={styles.statBadge} style={{ background: `${STATUT_COLOR[m.statut]}22`, color: STATUT_COLOR[m.statut] }}>
+                                    {STATUT_LABEL[m.statut]}
+                                  </span>
+                                </td>
+                                <td className={styles.prixCell}>
+                                  {m.prix ? `${m.prix} €` : <span className={styles.dash}>—</span>}
+                                </td>
+                                <td className={styles.remarqueCell}>
+                                  {m.remarque || <span className={styles.dash}>—</span>}
+                                </td>
+                                <td>
+                                  <button className={styles.detailBtn} onClick={(e) => { e.stopPropagation(); setSelectedMission(m); }}>
+                                    <Icon name="visibility" size={15} color="#8fa0b4" />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -368,10 +356,7 @@ const CalendrierPlanning: FunctionComponent = () => {
         {selectedMission && (
           <div className={styles.overlay} onClick={() => setSelectedMission(null)}>
             <div className={styles.panel} onClick={(e) => e.stopPropagation()}>
-              <div
-                className={styles.panelHeader}
-                style={{ borderLeft: `4px solid ${MACHINE_COLOR[selectedMission.machine].border}` }}
-              >
+              <div className={styles.panelHeader} style={{ borderLeft: `4px solid ${MACHINE_COLOR[selectedMission.machine].border}` }}>
                 <div>
                   <span className={styles.panelId}>{selectedMission.id}</span>
                   <h3 className={styles.panelMachine}>{selectedMission.machine}</h3>
@@ -422,20 +407,11 @@ const CalendrierPlanning: FunctionComponent = () => {
                   </div>
                 )}
                 <div className={styles.panelBadges}>
-                  <span
-                    className={styles.panelBadge}
-                    style={{ background: `${STATUT_COLOR[selectedMission.statut]}22`, color: STATUT_COLOR[selectedMission.statut] }}
-                  >
+                  <span className={styles.panelBadge} style={{ background: `${STATUT_COLOR[selectedMission.statut]}22`, color: STATUT_COLOR[selectedMission.statut] }}>
                     {STATUT_LABEL[selectedMission.statut]}
                   </span>
                   {selectedMission.statutPaiement && PAIEMENT_COLOR[selectedMission.statutPaiement] && (
-                    <span
-                      className={styles.panelBadge}
-                      style={{
-                        background: PAIEMENT_COLOR[selectedMission.statutPaiement].bg,
-                        color: PAIEMENT_COLOR[selectedMission.statutPaiement].text,
-                      }}
-                    >
+                    <span className={styles.panelBadge} style={{ background: PAIEMENT_COLOR[selectedMission.statutPaiement].bg, color: PAIEMENT_COLOR[selectedMission.statutPaiement].text }}>
                       {selectedMission.statutPaiement}
                     </span>
                   )}
