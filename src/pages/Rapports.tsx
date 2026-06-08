@@ -5,33 +5,33 @@ import { useMissions } from "../store/MissionsContext";
 import styles from "./Rapports.module.css";
 
 const MOIS_NOMS = [
-  "Jan",
-  "Fév",
-  "Mar",
-  "Avr",
-  "Mai",
-  "Jun",
-  "Jul",
-  "Aoû",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Déc",
+  "Jan", "Fév", "Mar", "Avr", "Mai", "Jun",
+  "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc",
 ];
+
 const now = new Date();
+const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
 const MACHINES = ["Nissan 30m", "Junior", "37m Tractée"];
+
 const MACHINE_COLOR: Record<string, string> = {
   "Nissan 30m": "#5b8dee",
   Junior: "#2a9d8f",
   "37m Tractée": "#e9a227",
 };
 
+// ✅ Statut basé sur la date : si date passée = Terminée, sinon statut réel
+function getStatutEffectif(statut: string, date: string): string {
+  if (date < todayStr) return "completed";
+  return statut;
+}
+
 const statutLabel: Record<string, string> = {
   active: "Confirmée",
   pending: "En attente",
   completed: "Terminée",
 };
+
 const statutColor: Record<string, string> = {
   active: "#2a9d8f",
   pending: "#e9a227",
@@ -49,9 +49,10 @@ const Rapports: FunctionComponent = () => {
     .filter((m) => m.statutPaiement !== "Payé")
     .reduce((s, m) => s + Number(m.prix || 0), 0);
 
-  const nbTerminees = missions.filter((m) => m.statut === "completed").length;
-  const nbEnCours = missions.filter((m) => m.statut === "active").length;
-  const nbAttente = missions.filter((m) => m.statut === "pending").length;
+  // ✅ Comptages basés sur la date
+  const nbTerminees = missions.filter((m) => m.date < todayStr).length;
+  const nbEnCours = missions.filter((m) => m.date >= todayStr && m.statut === "active").length;
+  const nbAttente = missions.filter((m) => m.date >= todayStr && m.statut === "pending").length;
 
   const parMachine = MACHINES.map((mac) => ({
     mac,
@@ -62,6 +63,17 @@ const Rapports: FunctionComponent = () => {
   }));
 
   const maxCA = Math.max(...parMachine.map((m) => m.ca), 1);
+
+  // ✅ Tri : futures en premier (croissant), passées ensuite (décroissant)
+  const missionsTries = [...missions]
+    .filter((m) => m.date)
+    .sort((a, b) => {
+      const aFuture = a.date >= todayStr;
+      const bFuture = b.date >= todayStr;
+      if (aFuture && bFuture) return a.date.localeCompare(b.date) || (a.heure || "").localeCompare(b.heure || "");
+      if (!aFuture && !bFuture) return b.date.localeCompare(a.date) || (b.heure || "").localeCompare(a.heure || "");
+      return aFuture ? -1 : 1;
+    });
 
   return (
     <AppLayout>
@@ -78,9 +90,7 @@ const Rapports: FunctionComponent = () => {
           <div className={styles.kpiCard}>
             <Icon name="payments" size={20} color="#2a9d8f" />
             <div className={styles.kpiInfo}>
-              <span className={styles.kpiVal}>
-                {caTotal.toLocaleString("fr-FR")} €
-              </span>
+              <span className={styles.kpiVal}>{caTotal.toLocaleString("fr-FR")} €</span>
               <span className={styles.kpiLab}>Chiffre d'affaires</span>
             </div>
           </div>
@@ -142,20 +152,14 @@ const Rapports: FunctionComponent = () => {
                       }}
                     />
                   </div>
-                  <div className={styles.barVal}>
-                    {ca.toLocaleString("fr-FR")} €
-                  </div>
+                  <div className={styles.barVal}>{ca.toLocaleString("fr-FR")} €</div>
                 </div>
               ))}
             </div>
-
             <div className={styles.machineMissions}>
               {parMachine.map(({ mac, count }) => (
                 <div key={mac} className={styles.machineMissionRow}>
-                  <span
-                    className={styles.machineDot}
-                    style={{ background: MACHINE_COLOR[mac] }}
-                  />
+                  <span className={styles.machineDot} style={{ background: MACHINE_COLOR[mac] }} />
                   <span className={styles.machineMac}>{mac}</span>
                   <span className={styles.machineCount}>
                     {count} mission{count > 1 ? "s" : ""}
@@ -174,25 +178,17 @@ const Rapports: FunctionComponent = () => {
                 { key: "active", label: "Confirmées", count: nbEnCours },
                 { key: "pending", label: "En attente", count: nbAttente },
               ].map(({ key, label, count }) => {
-                const pct =
-                  missions.length > 0
-                    ? Math.round((count / missions.length) * 100)
-                    : 0;
+                const pct = missions.length > 0 ? Math.round((count / missions.length) * 100) : 0;
                 return (
                   <div key={key} className={styles.statutItem}>
                     <div className={styles.statutRow}>
                       <span className={styles.statutLabel}>{label}</span>
-                      <span className={styles.statutCount}>
-                        {count} ({pct}%)
-                      </span>
+                      <span className={styles.statutCount}>{count} ({pct}%)</span>
                     </div>
                     <div className={styles.barTrack}>
                       <div
                         className={styles.barFill}
-                        style={{
-                          width: `${pct}%`,
-                          background: statutColor[key],
-                        }}
+                        style={{ width: `${pct}%`, background: statutColor[key] }}
                       />
                     </div>
                   </div>
@@ -207,9 +203,7 @@ const Rapports: FunctionComponent = () => {
                 <div className={styles.paiementBar}>
                   <div
                     style={{
-                      width: `${
-                        caTotal > 0 ? (caEncaisse / caTotal) * 100 : 0
-                      }%`,
+                      width: `${caTotal > 0 ? (caEncaisse / caTotal) * 100 : 0}%`,
                       background: "#6dbc8d",
                       height: "100%",
                       borderRadius: "99px",
@@ -232,14 +226,7 @@ const Rapports: FunctionComponent = () => {
           <div className={`${styles.panel} ${styles.panelFull}`}>
             <h3 className={styles.panelTitle}>Historique des missions</h3>
             {missions.length === 0 ? (
-              <p
-                style={{
-                  color: "#8fa0b4",
-                  fontSize: 14,
-                  textAlign: "center",
-                  padding: "24px 0",
-                }}
-              >
+              <p style={{ color: "#8fa0b4", fontSize: 14, textAlign: "center", padding: "24px 0" }}>
                 Aucune mission enregistrée
               </p>
             ) : (
@@ -256,9 +243,9 @@ const Rapports: FunctionComponent = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {[...missions]
-                    .sort((a, b) => b.date.localeCompare(a.date))
-                    .map((m) => (
+                  {missionsTries.map((m) => {
+                    const statutEffectif = getStatutEffectif(m.statut, m.date);
+                    return (
                       <tr key={m.id}>
                         <td className={styles.dateCell}>{m.date}</td>
                         <td>{m.heure}</td>
@@ -268,47 +255,38 @@ const Rapports: FunctionComponent = () => {
                             style={{
                               background: MACHINE_COLOR[m.machine] + "18",
                               color: MACHINE_COLOR[m.machine],
-                              borderLeft: `3px solid ${
-                                MACHINE_COLOR[m.machine]
-                              }`,
+                              borderLeft: `3px solid ${MACHINE_COLOR[m.machine]}`,
                             }}
                           >
                             {m.machine}
                           </span>
                         </td>
                         <td>
-                          {m.nomEntreprise || (
-                            <span className={styles.empty}>—</span>
-                          )}
+                          {m.nomEntreprise || <span className={styles.empty}>—</span>}
                         </td>
-                        <td>{m.lieu}</td>
+                        <td>{m.lieu || "—"}</td>
                         <td>
                           <span
                             className={styles.badge}
                             style={{
-                              background: statutColor[m.statut] + "20",
-                              color: statutColor[m.statut],
+                              background: statutColor[statutEffectif] + "20",
+                              color: statutColor[statutEffectif],
                             }}
                           >
-                            {statutLabel[m.statut]}
+                            {statutLabel[statutEffectif]}
                           </span>
                         </td>
                         <td className={styles.prixCell}>
-                          {m.prix
-                            ? `${Number(m.prix).toLocaleString("fr-FR")} €`
-                            : "—"}
+                          {m.prix ? `${Number(m.prix).toLocaleString("fr-FR")} €` : "—"}
                         </td>
                       </tr>
-                    ))}
+                    );
+                  })}
                 </tbody>
                 <tfoot>
                   <tr className={styles.totalRow}>
-                    <td colSpan={6} className={styles.totalLabel}>
-                      Total
-                    </td>
-                    <td className={styles.totalVal}>
-                      {caTotal.toLocaleString("fr-FR")} €
-                    </td>
+                    <td colSpan={6} className={styles.totalLabel}>Total</td>
+                    <td className={styles.totalVal}>{caTotal.toLocaleString("fr-FR")} €</td>
                   </tr>
                 </tfoot>
               </table>
