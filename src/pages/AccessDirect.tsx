@@ -6,21 +6,11 @@ import { useMissions } from "../store/MissionsContext";
 import styles from "./AccessDirect.module.css";
 
 const MACHINES = ["Nissan 30m", "Junior", "37m Tractée"];
-const MACHINE_COLOR: Record<
-  string,
-  { bg: string; color: string; border: string }
-> = {
-  "Nissan 30m": {
-    bg: "rgba(91,141,238,0.1)",
-    color: "#2a4fa3",
-    border: "#5b8dee",
-  },
+
+const MACHINE_COLOR: Record<string, { bg: string; color: string; border: string }> = {
+  "Nissan 30m": { bg: "rgba(91,141,238,0.1)", color: "#2a4fa3", border: "#5b8dee" },
   Junior: { bg: "rgba(42,157,143,0.1)", color: "#1a6a60", border: "#2a9d8f" },
-  "37m Tractée": {
-    bg: "rgba(233,162,39,0.1)",
-    color: "#7a4a00",
-    border: "#e9a227",
-  },
+  "37m Tractée": { bg: "rgba(233,162,39,0.1)", color: "#7a4a00", border: "#e9a227" },
 };
 
 const now = new Date();
@@ -43,6 +33,12 @@ function joursOuvrablesDuMois(annee: number, mois: number) {
 }
 
 function formatDate(dateStr: string) {
+  if (!dateStr) return "—";
+  // Éviter le décalage UTC en lisant directement les parties de la chaîne
+  const parts = dateStr.split("-");
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
   const d = new Date(dateStr);
   return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
 }
@@ -59,15 +55,7 @@ const statutColor: Record<string, string> = {
   completed: "#6dbc8d",
 };
 
-function Donut({
-  pct,
-  color,
-  size = 120,
-}: {
-  pct: number;
-  color: string;
-  size?: number;
-}) {
+function Donut({ pct, color, size = 120 }: { pct: number; color: string; size?: number }) {
   const r = 40;
   const circ = 2 * Math.PI * r;
   const offset = circ - (pct / 100) * circ;
@@ -89,6 +77,11 @@ const AccessDirect: FunctionComponent = () => {
   const { missions } = useMissions();
 
   const missionsMois = missions.filter((m) => {
+    if (!m.date) return false;
+    const parts = m.date.split("-");
+    if (parts.length === 3) {
+      return parseInt(parts[0]) === anneeCourante && parseInt(parts[1]) - 1 === moisCourant;
+    }
     const d = new Date(m.date);
     return d.getFullYear() === anneeCourante && d.getMonth() === moisCourant;
   });
@@ -99,6 +92,7 @@ const AccessDirect: FunctionComponent = () => {
 
   const totalConfirmees = missionsMois.filter((m) => m.statut === "active").length;
   const totalAttente = missionsMois.filter((m) => m.statut === "pending").length;
+
   const caTotal = missionsMois.reduce((s, m) => s + Number(m.prix || 0), 0);
   const caEncaisse = missionsMois
     .filter((m) => m.statutPaiement === "Payé")
@@ -115,8 +109,13 @@ const AccessDirect: FunctionComponent = () => {
     ),
   }));
 
-  const dernieresMissions = [...missionsMois]
-    .sort((a, b) => b.date.localeCompare(a.date))
+  // ✅ CORRIGÉ : toutes les missions triées par date + heure (plus récente en premier)
+  const dernieresMissions = [...missions]
+    .filter((m) => m.date)
+    .sort((a, b) => {
+      if (b.date !== a.date) return b.date.localeCompare(a.date);
+      return (b.heure || "").localeCompare(a.heure || "");
+    })
     .slice(0, 4);
 
   return (
@@ -242,7 +241,7 @@ const AccessDirect: FunctionComponent = () => {
             </div>
             {dernieresMissions.length === 0 ? (
               <p style={{ color: "#8fa0b4", fontSize: 14, textAlign: "center", padding: "24px 0" }}>
-                Aucune mission ce mois-ci
+                Aucune mission enregistrée
               </p>
             ) : (
               <div className={styles.tableWrap}>
@@ -264,9 +263,9 @@ const AccessDirect: FunctionComponent = () => {
                           <span
                             className={styles.macBadge}
                             style={{
-                              background: MACHINE_COLOR[m.machine].bg,
-                              color: MACHINE_COLOR[m.machine].color,
-                              borderLeft: `3px solid ${MACHINE_COLOR[m.machine].border}`,
+                              background: MACHINE_COLOR[m.machine]?.bg ?? "rgba(150,150,150,0.1)",
+                              color: MACHINE_COLOR[m.machine]?.color ?? "#555",
+                              borderLeft: `3px solid ${MACHINE_COLOR[m.machine]?.border ?? "#888"}`,
                             }}
                           >
                             {m.machine}
@@ -277,11 +276,11 @@ const AccessDirect: FunctionComponent = () => {
                           <span
                             className={styles.badge}
                             style={{
-                              background: `${statutColor[m.statut]}20`,
-                              color: statutColor[m.statut],
+                              background: `${statutColor[m.statut] ?? "#888"}20`,
+                              color: statutColor[m.statut] ?? "#888",
                             }}
                           >
-                            {statutLabel[m.statut]}
+                            {statutLabel[m.statut] ?? m.statut}
                           </span>
                         </td>
                         <td className={`${styles.prixCell} ${styles.hideOnMobile}`}>
