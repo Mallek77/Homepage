@@ -34,7 +34,6 @@ function joursOuvrablesDuMois(annee: number, mois: number) {
 
 function formatDate(dateStr: string) {
   if (!dateStr) return "—";
-  // Éviter le décalage UTC en lisant directement les parties de la chaîne
   const parts = dateStr.split("-");
   if (parts.length === 3) {
     return `${parts[2]}/${parts[1]}/${parts[0]}`;
@@ -109,12 +108,17 @@ const AccessDirect: FunctionComponent = () => {
     ),
   }));
 
-  // ✅ CORRIGÉ : toutes les missions triées par date + heure (plus récente en premier)
+  // ✅ Futures en premier (ordre croissant), passées ensuite (ordre décroissant)
+  const todayStr = now.toISOString().split("T")[0];
+
   const dernieresMissions = [...missions]
     .filter((m) => m.date)
     .sort((a, b) => {
-      if (b.date !== a.date) return b.date.localeCompare(a.date);
-      return (b.heure || "").localeCompare(a.heure || "");
+      const aFuture = a.date >= todayStr;
+      const bFuture = b.date >= todayStr;
+      if (aFuture && bFuture) return a.date.localeCompare(b.date);
+      if (!aFuture && !bFuture) return b.date.localeCompare(a.date);
+      return aFuture ? -1 : 1;
     })
     .slice(0, 4);
 
@@ -193,7 +197,7 @@ const AccessDirect: FunctionComponent = () => {
 
         {/* ── Panneau principal ── */}
         <div className={styles.panels}>
-          {/* Bulle remplissage planning */}
+          {/* Remplissage planning */}
           <div className={styles.panel}>
             <h3 className={styles.panelTitle}>Remplissage du mois</h3>
             <div className={styles.donutWrap}>
@@ -234,7 +238,7 @@ const AccessDirect: FunctionComponent = () => {
           {/* Tableau dernières missions */}
           <div className={`${styles.panel} ${styles.panelWide}`}>
             <div className={styles.panelHeader}>
-              <h3 className={styles.panelTitle}>Dernières missions</h3>
+              <h3 className={styles.panelTitle}>Prochaines missions</h3>
               <button className={styles.viewAll} onClick={() => navigate("/planning-en-cours")}>
                 Voir tout <Icon name="arrow-forward" size={14} color="#2a9d8f" />
               </button>
