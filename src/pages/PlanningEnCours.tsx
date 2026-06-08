@@ -11,25 +11,34 @@ const statuts = ["Payé", "En attente", "Annulé"] as const;
 const PlanningEnCours: FunctionComponent = () => {
   const navigate = useNavigate();
   const { missions, updateMission, deleteMission } = useMissions();
-
-  const [filter, setFilter] = useState<
-    "all" | "Payé" | "En attente" | "Annulé"
-  >("all");
+  const [filter, setFilter] = useState<"all" | "Payé" | "En attente" | "Annulé">("all");
   const [filterMachine, setFilterMachine] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Mission | null>(null);
 
-  const filtered = missions.filter((m) => {
-    const matchStatut = filter === "all" || m.statutPaiement === filter;
-    const matchMachine = filterMachine === "all" || m.machine === filterMachine;
-    const matchSearch =
-      search === "" ||
-      m.nomEntreprise.toLowerCase().includes(search.toLowerCase()) ||
-      m.lieu.toLowerCase().includes(search.toLowerCase()) ||
-      m.telephone.includes(search);
-    return matchStatut && matchMachine && matchSearch;
-  });
+  // ✅ Filtrage + tri par date et heure croissantes
+  const todayStr = new Date().toISOString().split("T")[0];
+
+  const filtered = missions
+    .filter((m) => {
+      const matchStatut = filter === "all" || m.statutPaiement === filter;
+      const matchMachine = filterMachine === "all" || m.machine === filterMachine;
+      const matchSearch =
+        search === "" ||
+        m.nomEntreprise.toLowerCase().includes(search.toLowerCase()) ||
+        m.lieu.toLowerCase().includes(search.toLowerCase()) ||
+        m.telephone.includes(search);
+      return matchStatut && matchMachine && matchSearch;
+    })
+    .sort((a, b) => {
+      const aFuture = a.date >= todayStr;
+      const bFuture = b.date >= todayStr;
+      // Futures en premier (croissant), passées ensuite (décroissant)
+      if (aFuture && bFuture) return a.date.localeCompare(b.date) || (a.heure || "").localeCompare(b.heure || "");
+      if (!aFuture && !bFuture) return b.date.localeCompare(a.date) || (b.heure || "").localeCompare(a.heure || "");
+      return aFuture ? -1 : 1;
+    });
 
   const startEdit = (m: Mission) => {
     setEditingId(m.id);
@@ -66,10 +75,7 @@ const PlanningEnCours: FunctionComponent = () => {
               {missions.length} mission{missions.length > 1 ? "s" : ""}
             </span>
           </div>
-          <button
-            className={styles.btnAdd}
-            onClick={() => navigate("/missions")}
-          >
+          <button className={styles.btnAdd} onClick={() => navigate("/missions")}>
             <Icon name="add" size={18} color="#fff" />
             Nouvelle Mission
           </button>
@@ -91,9 +97,7 @@ const PlanningEnCours: FunctionComponent = () => {
           {/* Filtre machine */}
           <div className={styles.filterTabs}>
             <button
-              className={`${styles.filterTab} ${
-                filterMachine === "all" ? styles.filterActive : ""
-              }`}
+              className={`${styles.filterTab} ${filterMachine === "all" ? styles.filterActive : ""}`}
               onClick={() => setFilterMachine("all")}
             >
               Toutes
@@ -101,9 +105,7 @@ const PlanningEnCours: FunctionComponent = () => {
             {machines.map((mac) => (
               <button
                 key={mac}
-                className={`${styles.filterTab} ${
-                  filterMachine === mac ? styles.filterActive : ""
-                }`}
+                className={`${styles.filterTab} ${filterMachine === mac ? styles.filterActive : ""}`}
                 onClick={() => setFilterMachine(mac)}
               >
                 {mac}
@@ -114,9 +116,7 @@ const PlanningEnCours: FunctionComponent = () => {
           {/* Filtre paiement */}
           <div className={styles.filterTabs}>
             <button
-              className={`${styles.filterTab} ${
-                filter === "all" ? styles.filterActive : ""
-              }`}
+              className={`${styles.filterTab} ${filter === "all" ? styles.filterActive : ""}`}
               onClick={() => setFilter("all")}
             >
               Tout
@@ -124,9 +124,7 @@ const PlanningEnCours: FunctionComponent = () => {
             {statuts.map((s) => (
               <button
                 key={s}
-                className={`${styles.filterTab} ${
-                  filter === s ? styles.filterActive : ""
-                }`}
+                className={`${styles.filterTab} ${filter === s ? styles.filterActive : ""}`}
                 onClick={() => setFilter(s as any)}
               >
                 {s}
@@ -134,10 +132,7 @@ const PlanningEnCours: FunctionComponent = () => {
             ))}
           </div>
 
-          <button
-            className={styles.btnCalendar}
-            onClick={() => navigate("/planning")}
-          >
+          <button className={styles.btnCalendar} onClick={() => navigate("/planning")}>
             <Icon name="calendar" size={16} color="var(--text-secondary)" />
             Calendrier
           </button>
@@ -177,9 +172,7 @@ const PlanningEnCours: FunctionComponent = () => {
                         className={styles.cellInput}
                         type="date"
                         value={editData.date}
-                        onChange={(e) =>
-                          setEditData({ ...editData, date: e.target.value })
-                        }
+                        onChange={(e) => setEditData({ ...editData, date: e.target.value })}
                       />
                     </td>
                     <td>
@@ -187,9 +180,7 @@ const PlanningEnCours: FunctionComponent = () => {
                         className={styles.cellInput}
                         type="text"
                         value={editData.heure}
-                        onChange={(e) =>
-                          setEditData({ ...editData, heure: e.target.value })
-                        }
+                        onChange={(e) => setEditData({ ...editData, heure: e.target.value })}
                       />
                     </td>
                     <td>
@@ -197,10 +188,7 @@ const PlanningEnCours: FunctionComponent = () => {
                         className={styles.cellInput}
                         value={editData.machine}
                         onChange={(e) =>
-                          setEditData({
-                            ...editData,
-                            machine: e.target.value as Mission["machine"],
-                          })
+                          setEditData({ ...editData, machine: e.target.value as Mission["machine"] })
                         }
                       >
                         {machines.map((mac) => (
@@ -213,12 +201,7 @@ const PlanningEnCours: FunctionComponent = () => {
                         className={styles.cellInput}
                         type="text"
                         value={editData.nomEntreprise}
-                        onChange={(e) =>
-                          setEditData({
-                            ...editData,
-                            nomEntreprise: e.target.value,
-                          })
-                        }
+                        onChange={(e) => setEditData({ ...editData, nomEntreprise: e.target.value })}
                       />
                     </td>
                     <td>
@@ -226,12 +209,7 @@ const PlanningEnCours: FunctionComponent = () => {
                         className={styles.cellInput}
                         type="text"
                         value={editData.telephone}
-                        onChange={(e) =>
-                          setEditData({
-                            ...editData,
-                            telephone: e.target.value,
-                          })
-                        }
+                        onChange={(e) => setEditData({ ...editData, telephone: e.target.value })}
                       />
                     </td>
                     <td>
@@ -239,9 +217,7 @@ const PlanningEnCours: FunctionComponent = () => {
                         className={styles.cellInput}
                         type="email"
                         value={editData.email}
-                        onChange={(e) =>
-                          setEditData({ ...editData, email: e.target.value })
-                        }
+                        onChange={(e) => setEditData({ ...editData, email: e.target.value })}
                       />
                     </td>
                     <td>
@@ -249,9 +225,7 @@ const PlanningEnCours: FunctionComponent = () => {
                         className={styles.cellInput}
                         type="text"
                         value={editData.lieu}
-                        onChange={(e) =>
-                          setEditData({ ...editData, lieu: e.target.value })
-                        }
+                        onChange={(e) => setEditData({ ...editData, lieu: e.target.value })}
                       />
                     </td>
                     <td>
@@ -261,8 +235,7 @@ const PlanningEnCours: FunctionComponent = () => {
                         onChange={(e) =>
                           setEditData({
                             ...editData,
-                            statutPaiement: e.target
-                              .value as Mission["statutPaiement"],
+                            statutPaiement: e.target.value as Mission["statutPaiement"],
                           })
                         }
                       >
@@ -277,9 +250,7 @@ const PlanningEnCours: FunctionComponent = () => {
                         className={styles.cellInput}
                         type="number"
                         value={editData.prix}
-                        onChange={(e) =>
-                          setEditData({ ...editData, prix: e.target.value })
-                        }
+                        onChange={(e) => setEditData({ ...editData, prix: e.target.value })}
                       />
                     </td>
                     <td>
@@ -287,9 +258,7 @@ const PlanningEnCours: FunctionComponent = () => {
                         className={styles.cellInput}
                         type="text"
                         value={editData.remarque}
-                        onChange={(e) =>
-                          setEditData({ ...editData, remarque: e.target.value })
-                        }
+                        onChange={(e) => setEditData({ ...editData, remarque: e.target.value })}
                       />
                     </td>
                     <td>
@@ -300,10 +269,7 @@ const PlanningEnCours: FunctionComponent = () => {
                         >
                           <Icon name="save" size={15} />
                         </button>
-                        <button
-                          className={styles.actionBtn}
-                          onClick={cancelEdit}
-                        >
+                        <button className={styles.actionBtn} onClick={cancelEdit}>
                           <Icon name="close" size={15} />
                         </button>
                       </div>
@@ -317,9 +283,7 @@ const PlanningEnCours: FunctionComponent = () => {
                       <span className={styles.machineBadge}>{m.machine}</span>
                     </td>
                     <td>
-                      {m.nomEntreprise || (
-                        <span className={styles.empty2}>—</span>
-                      )}
+                      {m.nomEntreprise || <span className={styles.empty2}>—</span>}
                     </td>
                     <td>
                       {m.telephone || <span className={styles.empty2}>—</span>}
@@ -332,11 +296,7 @@ const PlanningEnCours: FunctionComponent = () => {
                     </td>
                     <td>
                       {m.statutPaiement ? (
-                        <span
-                          className={`${styles.badge} ${
-                            statutColor[m.statutPaiement]
-                          }`}
-                        >
+                        <span className={`${styles.badge} ${statutColor[m.statutPaiement]}`}>
                           {m.statutPaiement}
                         </span>
                       ) : (
@@ -344,11 +304,7 @@ const PlanningEnCours: FunctionComponent = () => {
                       )}
                     </td>
                     <td className={styles.prixCell}>
-                      {m.prix ? (
-                        `${m.prix} €`
-                      ) : (
-                        <span className={styles.empty2}>—</span>
-                      )}
+                      {m.prix ? `${m.prix} €` : <span className={styles.empty2}>—</span>}
                     </td>
                     <td className={styles.remarqueCell}>
                       {m.remarque || <span className={styles.empty2}>—</span>}
