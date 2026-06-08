@@ -27,6 +27,14 @@ type MissionsContextType = {
 
 const MissionsContext = createContext<MissionsContextType | null>(null);
 
+function normalizeDate(date: string): string {
+  if (!date) return "";
+  if (date.includes("T")) {
+    return date.split("T")[0];
+  }
+  return date;
+}
+
 export function MissionsProvider({ children }: { children: ReactNode }) {
   const [missions, setMissions] = useState<Mission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +46,13 @@ export function MissionsProvider({ children }: { children: ReactNode }) {
         return r.json();
       })
       .then((data) => {
-        setMissions(Array.isArray(data) ? data : []);
+        const normalized = Array.isArray(data)
+          ? data.map((m: Mission) => ({
+              ...m,
+              date: normalizeDate(m.date),
+            }))
+          : [];
+        setMissions(normalized);
         setLoading(false);
       })
       .catch(() => {
