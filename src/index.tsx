@@ -1,3 +1,4 @@
+import "./global.css";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
@@ -11,7 +12,6 @@ import {
 } from "@mui/material";
 
 import { MissionsProvider } from "./store/MissionsContext";
-import "./global.css";
 
 const muiTheme = createTheme();
 

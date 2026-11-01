@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 import {
   Routes,
   Route,
@@ -17,7 +17,7 @@ function App() {
   const action = useNavigationType();
   const location = useLocation();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (action !== "POP") {
       window.scrollTo(0, 0);
     }

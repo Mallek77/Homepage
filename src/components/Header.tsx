@@ -35,8 +35,11 @@ const Header: FunctionComponent<HeaderType> = ({
       <Box className={styles.headerContent}>
         <img
           className={styles.logoIcon}
+          src={logo}
           loading="lazy"
           alt=""
+          width={156}
+          height={41}
           onClick={onLogoClick}
         />
         <nav className={styles.navLinks}>

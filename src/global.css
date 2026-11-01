@@ -1,5 +1,4 @@
-@import url("https://fonts.googleapis.com/icon?family=Material+Icons&display=swap");
-
+/* Material Icons loaded via index.html <link> to avoid render-blocking @import */
 body {
   margin: 0;
   line-height: normal;
