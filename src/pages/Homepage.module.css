@@ -12,11 +12,7 @@
   color: var(--color-black);
   font-family: var(--font-archivo);
 }
-.homepage:hover {
-  align-items: center;
-  justify-content: space-between;
-  gap: 0;
-}
+
 .staysSectionWrapper {
   align-self: stretch;
   display: flex;
